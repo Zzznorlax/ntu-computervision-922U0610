@@ -23,7 +23,7 @@ By calling the function `flip_vertically(img)` written in `main.py` we can get t
 ```shell
 python3 main.py --img=./inputs/lena.bmp --op=flip_v
 ```
-![upside_down_lena.jpg](outputs/upside_down_lena.jpg)
+![upside_down_lena.jpg](assets/upside_down_lena.jpg)
 
 
 **b. right-side left lena.bmp**
@@ -38,7 +38,7 @@ By calling the function `flip_horizontally(img)` written in `main.py` we can get
 ```shell
 python3 main.py --img=./inputs/lena.bmp --op=flip_h
 ```
-![right_side_left_lena.jpg](outputs/right_side_left_lena.jpg)
+![right_side_left_lena.jpg](assets/right_side_left_lena.jpg)
 
 
 **c. diagonally flip lena.bmp**
@@ -53,7 +53,7 @@ By calling the function `flip_diagonally(img)` written in `main.py` we can get t
 ```shell
 python3 main.py --img=./inputs/lena.bmp --op=flip_d
 ```
-![diagonally_flipped_lena.jpg](outputs/diagonally_flipped_lena.jpg)
+![diagonally_flipped_lena.jpg](assets/diagonally_flipped_lena.jpg)
 
 
 ### Part 2.
@@ -70,7 +70,7 @@ By calling the function `rotate(img)` written in `main.py` we can get the result
 ```shell
 python3 main.py --img=./inputs/lena.bmp --op=rot
 ```
-![rotated_lena.jpg](outputs/rotated_lena.jpg)
+![rotated_lena.jpg](assets/rotated_lena.jpg)
 
 
 **e. shrink lena.bmp in half**
@@ -104,7 +104,7 @@ By calling the function `shrink(img)` written in `main.py` we can get the result
 ```shell
 python3 main.py --img=./inputs/lena.bmp --op=shrink
 ```
-![shrunk_lena.jpg](outputs/shrunk_lena.jpg)
+![shrunk_lena.jpg](assets/shrunk_lena.jpg)
 
 **f. binarize lena.bmp at 128 to get a binary image**
 Simply check every pixel value, if the value is over the threshold, which is 128 in this case, then we set the pixel value to be 255, otherwise set it to be 0.
@@ -123,4 +123,4 @@ By calling the function `binarize(img)` written in `main.py` we can get the resu
 ```shell
 python3 main.py --img=./inputs/lena.bmp --op=bin
 ```
-![binarized_lena.jpg](outputs/binarized_lena.jpg)
+![binarized_lena.jpg](assets/binarized_lena.jpg)
