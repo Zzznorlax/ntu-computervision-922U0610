@@ -1,10 +1,10 @@
 """HW2 Basic Image Manipulation"""
-from turtle import color
 from typing import List
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+import sys
 
 
 def binarize(img: np.ndarray, thres: int = 128, upper_val: int = 255, lower_val: int = 0) -> np.ndarray:
@@ -64,7 +64,6 @@ def plot_hist(hist: List[int]):
     plt.show()
 
 
-
 def dfs(graph: np.ndarray, x: int, y: int, group: int, count: int) -> int:
 
     if graph[y, x] != 1:
@@ -89,8 +88,59 @@ def dfs(graph: np.ndarray, x: int, y: int, group: int, count: int) -> int:
     return count
 
 
-def find_connected_components(graph: np.ndarray, size_thres: int = 500) -> np.ndarray:
+def find_connected_components(img: np.ndarray, size_thres: int = 500, bin_val: int = 255) -> np.ndarray:
 
+    sys.setrecursionlimit(100000)
+
+    # fetches and initializes image dimensions
+    h, w = img.shape[:2]
+
+    group = 1
+    group_step = 1
+    component_list = []
+
+    def dfs(x: int, y: int, count: int) -> int:
+
+        print(x, y, group, count)
+
+        if img[y, x] != bin_val:
+            return count
+
+        img[y, x] = group
+        count += 1
+
+        mvs = (-1, 0, 1)
+        for x_mv in mvs:
+            for y_mv in mvs:
+                next_x = x + x_mv
+                next_y = y + y_mv
+
+                if next_x < 0 or next_y < 0 or next_x >= w or next_y >= h:
+                    continue
+
+                if img[next_y, next_x] != bin_val:
+                    continue
+
+                count = dfs(next_x, next_y, count)
+
+        return count
+
+    for x in range(w):
+        for y in range(h):
+            component_size = dfs(x, y, 0)
+
+            if component_size > size_thres:
+                component_list.append(group)
+
+            if component_size > 0:
+                group += group_step
+
+    for x in range(w):
+        for y in range(h):
+            if img[y, x] not in component_list:
+                img[y, x] = 0
+
+    return img
 
 
 if __name__ == '__main__':
@@ -98,5 +148,13 @@ if __name__ == '__main__':
     img_path = "inputs/lena.bmp"
     img = cv2.imread(img_path, flags=cv2.IMREAD_UNCHANGED)
 
-    hist = get_hist(img)
-    plot_hist(hist)
+    # hist = get_hist(img)
+    # plot_hist(hist)
+
+    bin_img = binarize(img)
+
+    result = find_connected_components(bin_img)
+
+    cv2.imshow("result", result)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
