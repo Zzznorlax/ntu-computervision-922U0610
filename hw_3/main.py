@@ -104,6 +104,7 @@ if __name__ == '__main__':
     if op == "hist":
         hist = get_hist(img)
         plot_hist(hist)
+        cv2.imwrite("original.jpg", img)
 
     elif op == "divide":
         divided_img = divide_intensity(img)
@@ -112,10 +113,11 @@ if __name__ == '__main__':
         cv2.imwrite("divided.jpg", img)
 
     elif op == "hist_eq":
-        equalized_img = equalize_hist(img)
+        divided_img = divide_intensity(img)
+        equalized_img = equalize_hist(divided_img)
         hist = get_hist(equalized_img)
         plot_hist(hist, filename="equalized_hist.jpg")
-        cv2.imwrite("equalized.jpg", img)
+        cv2.imwrite("equalized.jpg", equalized_img)
 
     else:
         raise Exception("unknown operation {}".format(op))
