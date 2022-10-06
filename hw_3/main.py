@@ -60,7 +60,7 @@ def divide_intensity(img: np.ndarray, divider: float = 3) -> np.ndarray:
     return img
 
 
-def equalize_hist(img: np.ndarray, max_intensity: int = 255, min_intensity: int = 0) -> np.ndarray:
+def equalize_hist(img: np.ndarray, max_intensity: int = 255) -> np.ndarray:
     hist = get_hist(img)
 
     h, w = img.shape[:2]
