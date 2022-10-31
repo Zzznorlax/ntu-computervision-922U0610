@@ -1,4 +1,4 @@
-"""HW3 Histogram Equalization"""
+"""HW4 Histogram Equalization"""
 from typing import List
 from unittest import result
 import cv2
