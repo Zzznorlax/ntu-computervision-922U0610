@@ -1,69 +1,15 @@
-"""HW5 Mathematical Morphology - Gray Scaled Morphology"""
-from typing import List
-from unittest import result
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-import argparse
+# Computer Vision Homework 6
 
+## Yokoi Connectivity Number
 
-def downsample(img: np.ndarray, scale: int = 8) -> np.ndarray:
-    h, w = img.shape[:2]
-    ch = 1
-    if len(img.shape) > 2:
-        ch = img.shape[2]
-    elif len(img.shape) == 2:
-        img = np.expand_dims(img, axis=-1)
+**R11525079 游子霆**
 
-    result = np.empty((h // scale, w // scale, ch), dtype=np.uint8)
+### Description
+In this homework, a program that can be used to count the Yokoi connectivity number on a downsampled image
 
-    for ch_idx in range(ch):
-        for x in range(w // scale):
-            for y in range(h // scale):
-
-                raw_x = x * scale
-                raw_y = y * scale
-
-                result[y, x, ch_idx] = img[raw_y, raw_x, ch_idx]
-
-    return result
-
-
-def binarize(img: np.ndarray, thres: int = 128, upper_val: int = 255, lower_val: int = 0) -> np.ndarray:
-
-    h, w = img.shape[:2]
-
-    for x in range(w):
-        for y in range(h):
-            value = img[y, x]
-
-            if value >= thres:
-                img[y, x] = upper_val
-            else:
-                img[y, x] = lower_val
-
-    return img
-
-
-def h_op(b: int, c: int, d: int, e: int) -> str:
-    if b == c and (d != b or e != b):
-        return 'q'
-    if b == c and (d == b and e == b):
-        return 'r'
-
-    return 's'
-
-
-def yokoi(img: np.ndarray):
-    h, w = img.shape[:2]
-    ch = 1
-    if len(img.shape) > 2:
-        ch = img.shape[2]
-    elif len(img.shape) == 2:
-        img = np.expand_dims(img, axis=-1)
-
-    result = np.zeros_like(img)
-
+**Yokoi**
+By going through each pixel and use the maximum value in the pixel set of kernel as the new value
+```python
     for ch_idx in range(ch):
         for x in range(w):
             for y in range(h):
@@ -132,28 +78,9 @@ def yokoi(img: np.ndarray):
                         result[y, x, ch_idx] = num
 
     return result
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description='basic image manipulation program')
-    parser.add_argument("--img")
-    parser.add_argument("--op")
-
-    args = parser.parse_args()
-
-    img_path = args.img
-
-    img = cv2.imread(img_path, flags=cv2.IMREAD_UNCHANGED)
-
-    op = str(args.op)
-
-    if op == "yokoi":
-        result = downsample(img, scale=8)
-        result = binarize(result)
-        yokoi_mat = np.squeeze(yokoi(result))
-
-        np.savetxt("yokoi_mat.txt", yokoi_mat, fmt='%i')
-
-    else:
-        raise Exception("unknown operation {}".format(op))
+```
+Yokoi connectivity number matrix can be generated using the following command
+```shell
+python3 hw_6/main.py --img=inputs/lena.bmp --op=yokoi
+```
+![yokoi.png](assets/yokoi.png)
