@@ -172,15 +172,9 @@ def pair_relation(yokoi_img: np.ndarray, img: np.ndarray) -> np.ndarray:
     return marked_img
 
 
-def thinning(img: np.ndarray, marked_img: np.ndarray):
-    h, w = img.shape[:2]
-    ch = 1
-    if len(img.shape) > 2:
-        ch = img.shape[2]
-    elif len(img.shape) == 2:
-        img = np.expand_dims(img, axis=-1)
+def thinning(bin_img, img_pair):
 
-    result = img.copy()
+    h, w = bin_img.shape[:2]
 
     def shrink_op(b: int, c: int, d: int, e: int) -> int:
         if b == c and (d != b or e != b):
@@ -188,147 +182,70 @@ def thinning(img: np.ndarray, marked_img: np.ndarray):
 
         return 0
 
-    for ch_idx in range(ch):
-        for x in range(w):
-            for y in range(h):
-                if img[y, x, ch_idx] > 0 and marked_img[y, x, ch_idx] != 2:
-                    if y == 0:
-                        if x == 0:
-                            x7, x2, x6 = 0, 0, 0
-                            x3, x0, x1 = 0, img[y, x, ch_idx], img[y, x + 1, ch_idx]
-                            x8, x4, x5 = 0, img[y + 1, x, ch_idx], img[y + 1, x + 1, ch_idx]
+    def kernel_op(bin_img: np.ndarray, x: int, y: int):
+        if y == 0:
+            if x == 0:
+                x7, x2, x6 = 0, 0, 0
+                x3, x0, x1 = 0, bin_img[y, x], bin_img[y, x + 1]
+                x8, x4, x5 = 0, bin_img[y + 1, x], bin_img[y + 1, x + 1]
 
-                        elif x == w - 1:
-                            x7, x2, x6 = 0, 0, 0
-                            x3, x0, x1 = img[y, x - 1, ch_idx], img[y, x, ch_idx], 0
-                            x8, x4, x5 = img[y + 1, x - 1, ch_idx], img[y + 1, x, ch_idx], 0
+            elif x == w - 1:
+                x7, x2, x6 = 0, 0, 0
+                x3, x0, x1 = bin_img[y, x - 1], bin_img[y, x], 0
+                x8, x4, x5 = bin_img[y + 1, x - 1], bin_img[y + 1, x], 0
 
-                        else:
-                            x7, x2, x6 = 0, 0, 0
-                            x3, x0, x1 = img[y, x - 1, ch_idx], img[y, x, ch_idx], img[y, x + 1, ch_idx]
-                            x8, x4, x5 = img[y + 1, x - 1, ch_idx], img[y + 1, x, ch_idx], img[y + 1, x + 1, ch_idx]
+            else:
+                x7, x2, x6 = 0, 0, 0
+                x3, x0, x1 = bin_img[y, x - 1], bin_img[y, x], bin_img[y, x + 1]
+                x8, x4, x5 = bin_img[y + 1, x - 1], bin_img[y + 1, x], bin_img[y + 1, x + 1]
 
-                    elif y == h - 1:
-                        if x == 0:
-                            x7, x2, x6 = 0, img[y - 1, x, ch_idx], img[y - 1, x + 1, ch_idx]
-                            x3, x0, x1 = 0, img[y, x, ch_idx], img[y, x + 1, ch_idx]
-                            x8, x4, x5 = 0, 0, 0
+        elif y == h - 1:
+            if x == 0:
+                x7, x2, x6 = 0, bin_img[y - 1, x], bin_img[y - 1, x + 1]
+                x3, x0, x1 = 0, bin_img[y, x], bin_img[y, x + 1]
+                x8, x4, x5 = 0, 0, 0
 
-                        elif x == w - 1:
-                            x7, x2, x6 = img[y - 1, x - 1, ch_idx], img[y - 1, x, ch_idx], 0
-                            x3, x0, x1 = img[y, x - 1, ch_idx], img[y, x, ch_idx], 0
-                            x8, x4, x5 = 0, 0, 0
+            elif x == w - 1:
+                x7, x2, x6 = bin_img[y - 1, x - 1], bin_img[y - 1, x], 0
+                x3, x0, x1 = bin_img[y, x - 1], bin_img[y, x], 0
+                x8, x4, x5 = 0, 0, 0
 
-                        else:
-                            x7, x2, x6 = img[y - 1, x - 1, ch_idx], img[y - 1, x, ch_idx], img[y - 1, x + 1, ch_idx]
-                            x3, x0, x1 = img[y, x - 1, ch_idx], img[y, x, ch_idx], img[y, x + 1, ch_idx]
-                            x8, x4, x5 = 0, 0, 0
-                    else:
-                        if x == 0:
-                            x7, x2, x6 = 0, img[y - 1, x, ch_idx], img[y - 1, x + 1, ch_idx]
-                            x3, x0, x1 = 0, img[y, x, ch_idx], img[y, x + 1, ch_idx]
-                            x8, x4, x5 = 0, img[y + 1, x, ch_idx], img[y + 1, x + 1, ch_idx]
+            else:
+                x7, x2, x6 = bin_img[y - 1, x - 1], bin_img[y - 1, x], bin_img[y - 1, x + 1]
+                x3, x0, x1 = bin_img[y, x - 1], bin_img[y, x], bin_img[y, x + 1]
+                x8, x4, x5 = 0, 0, 0
 
-                        elif x == w - 1:
-                            x7, x2, x6 = img[y - 1, x - 1, ch_idx], img[y - 1, x, ch_idx], 0
-                            x3, x0, x1 = img[y, x - 1, ch_idx], img[y, x, ch_idx], 0
-                            x8, x4, x5 = img[y + 1, x - 1, ch_idx], img[y + 1, x, ch_idx], 0
-
-                        else:
-                            x7, x2, x6 = img[y - 1, x - 1, ch_idx], img[y - 1, x, ch_idx], img[y - 1, x + 1, ch_idx]
-                            x3, x0, x1 = img[y, x - 1, ch_idx], img[y, x, ch_idx], img[y, x + 1, ch_idx]
-                            x8, x4, x5 = img[y + 1, x - 1, ch_idx], img[y + 1, x, ch_idx], img[y + 1, x + 1, ch_idx]
-
-                    a1 = shrink_op(x0, x1, x6, x2)
-                    a2 = shrink_op(x0, x2, x7, x3)
-                    a3 = shrink_op(x0, x3, x8, x4)
-                    a4 = shrink_op(x0, x4, x5, x1)
-
-                    if a1 + a2 + a3 + a4 == 1:
-                        result[y, x, ch_idx] = 0
-
-    return result
-
-
-def ConnectedShrinkOperator(bin_img, img_pair):
-    def h_cs(b, c, d, e):
-        if b == c and (d != b or e != b):
-            return 1
         else:
+            if x == 0:
+                x7, x2, x6 = 0, bin_img[y - 1, x], bin_img[y - 1, x + 1]
+                x3, x0, x1 = 0, bin_img[y, x], bin_img[y, x + 1]
+                x8, x4, x5 = 0, bin_img[y + 1, x], bin_img[y + 1, x + 1]
+
+            elif x == w - 1:
+                x7, x2, x6 = bin_img[y - 1, x - 1], bin_img[y - 1, x], 0
+                x3, x0, x1 = bin_img[y, x - 1], bin_img[y, x], 0
+                x8, x4, x5 = bin_img[y + 1, x - 1], bin_img[y + 1, x], 0
+
+            else:
+                x7, x2, x6 = bin_img[y - 1, x - 1], bin_img[y - 1, x], bin_img[y - 1, x + 1]
+                x3, x0, x1 = bin_img[y, x - 1], bin_img[y, x], bin_img[y, x + 1]
+                x8, x4, x5 = bin_img[y + 1, x - 1], bin_img[y + 1, x], bin_img[y + 1, x + 1]
+
+        a1 = shrink_op(x0, x1, x6, x2)
+        a2 = shrink_op(x0, x2, x7, x3)
+        a3 = shrink_op(x0, x3, x8, x4)
+        a4 = shrink_op(x0, x4, x5, x1)
+
+        if a1 + a2 + a3 + a4 == 1:
             return 0
 
-    def f_cs(a1, a2, a3, a4, x0):
-        if sum(np.array([a1, a2, a3, a4]) == 1) == 1:
-            return 0
-        else:
-            return x0
-
-    def ConnectedShrink(bin_img, i, j):
-        if i == 0:
-            if j == 0:
-                # top-left
-                x7, x2, x6 = 0, 0, 0
-                x3, x0, x1 = 0, bin_img[i, j], bin_img[i, j + 1]
-                x8, x4, x5 = 0, bin_img[i + 1, j], bin_img[i + 1, j + 1]
-            elif j == bin_img.shape[1] - 1:
-                # top-right
-                x7, x2, x6 = 0, 0, 0
-                x3, x0, x1 = bin_img[i, j - 1], bin_img[i, j], 0
-                x8, x4, x5 = bin_img[i + 1, j - 1], bin_img[i + 1, j], 0
-            else:
-                # top-row
-                x7, x2, x6 = 0, 0, 0
-                x3, x0, x1 = bin_img[i, j -
-                                     1], bin_img[i, j], bin_img[i, j + 1]
-                x8, x4, x5 = bin_img[i + 1, j -
-                                     1], bin_img[i + 1, j], bin_img[i + 1, j + 1]
-        elif i == bin_img.shape[0] - 1:
-            if j == 0:
-                # bottom-left
-                x7, x2, x6 = 0, bin_img[i - 1, j], bin_img[i - 1, j + 1]
-                x3, x0, x1 = 0, bin_img[i, j], bin_img[i, j + 1]
-                x8, x4, x5 = 0, 0, 0
-            elif j == bin_img.shape[1] - 1:
-                # bottom-right
-                x7, x2, x6 = bin_img[i - 1, j - 1], bin_img[i - 1, j], 0
-                x3, x0, x1 = bin_img[i, j - 1], bin_img[i, j], 0
-                x8, x4, x5 = 0, 0, 0
-            else:
-                # bottom-row
-                x7, x2, x6 = bin_img[i - 1, j -
-                                     1], bin_img[i - 1, j], bin_img[i - 1, j + 1]
-                x3, x0, x1 = bin_img[i, j -
-                                     1], bin_img[i, j], bin_img[i, j + 1]
-                x8, x4, x5 = 0, 0, 0
-        else:
-            if j == 0:
-                x7, x2, x6 = 0, bin_img[i - 1, j], bin_img[i - 1, j + 1]
-                x3, x0, x1 = 0, bin_img[i, j], bin_img[i, j + 1]
-                x8, x4, x5 = 0, bin_img[i + 1, j], bin_img[i + 1, j + 1]
-            elif j == bin_img.shape[1] - 1:
-                x7, x2, x6 = bin_img[i - 1, j - 1], bin_img[i - 1, j], 0
-                x3, x0, x1 = bin_img[i, j - 1], bin_img[i, j], 0
-                x8, x4, x5 = bin_img[i + 1, j - 1], bin_img[i + 1, j], 0
-            else:
-                x7, x2, x6 = bin_img[i - 1, j -
-                                     1], bin_img[i - 1, j], bin_img[i - 1, j + 1]
-                x3, x0, x1 = bin_img[i, j -
-                                     1], bin_img[i, j], bin_img[i, j + 1]
-                x8, x4, x5 = bin_img[i + 1, j -
-                                     1], bin_img[i + 1, j], bin_img[i + 1, j + 1]
-
-        a1 = h_cs(x0, x1, x6, x2)
-        a2 = h_cs(x0, x2, x7, x3)
-        a3 = h_cs(x0, x3, x8, x4)
-        a4 = h_cs(x0, x4, x5, x1)
-        return f_cs(a1, a2, a3, a4, x0)
+        return x0
 
     bin_img = bin_img.copy()
-    for i in range(bin_img.shape[0]):
-        for j in range(bin_img.shape[1]):
-            if bin_img[i, j] > 0 and img_pair[i, j] != 2:
-                print(img_pair[i, j])
-                bin_img[i, j] = ConnectedShrink(bin_img, i, j)
+    for y in range(h):
+        for x in range(w):
+            if bin_img[y, x] > 0 and img_pair[y, x] != 2:
+                bin_img[y, x] = kernel_op(bin_img, x, y)
     return bin_img
 
 
@@ -350,17 +267,12 @@ if __name__ == '__main__':
         img = downsample(img, scale=8)
         bin_img = binarize(img)
 
-        c = 0
         thinned = bin_img
         while True:
             yokoi_mat = yokoi(thinned)
             marked = pair_relation(yokoi_mat, thinned)
 
             new_thinned = thinning(thinned, marked)
-            # new_thinned = ConnectedShrinkOperator(thinned, marked)
-
-            cv2.imwrite("thinning_{}.jpg".format(c), new_thinned)
-            c += 1
 
             if (thinned != new_thinned).sum() == 0:
                 break
