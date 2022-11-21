@@ -214,37 +214,6 @@ def snr(gt_img: np.ndarray, noise: np.ndarray) -> float:
     return res
 
 
-def snr_a(gt_img: np.ndarray, sample_img: np.ndarray) -> float:
-    h, w = gt_img.shape[:2]
-
-    gt_img = gt_img.astype(np.float16) / 255
-    sample_img = sample_img.astype(np.float16) / 255
-
-    gt_sum = 0
-    sample_sum = 0
-    for x in range(w):
-        for y in range(h):
-            gt_sum += gt_img[y, x]
-            sample_sum += sample_img[y, x]
-
-    gt_avg = gt_sum / (h * w)
-    sample_avg = sample_sum / (h * w)
-
-    gt_var = 0
-    sample_var = 0
-    for x in range(w):
-        for y in range(h):
-            gt_var += (gt_img[y, x] - gt_avg)**2
-            sample_var += (sample_img[y, x] - sample_avg)**2
-
-    gt_var /= (h * w)
-    sample_var /= (h * w)
-
-    result = 20 * math.log10(math.sqrt(gt_var) / math.sqrt(sample_var))
-
-    return result
-
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='basic image manipulation program')
@@ -282,11 +251,11 @@ if __name__ == '__main__':
         o_c_filtered = {}
         c_o_filtered = {}
         for k, noise in noise_dict.items():
-            box_filtered["c_{}_3".format(k)] = box_filter(noise, 3)
-            box_filtered["c_{}_5".format(k)] = box_filter(noise, 5)
+            box_filtered["c_3_{}".format(k)] = box_filter(noise, 3)
+            box_filtered["c_5_{}".format(k)] = box_filter(noise, 5)
 
-            median_filtered["d_{}_3".format(k)] = median_filter(noise, 3)
-            median_filtered["d_{}_5".format(k)] = median_filter(noise, 5)
+            median_filtered["d_3_{}".format(k)] = median_filter(noise, 3)
+            median_filtered["d_5_{}".format(k)] = median_filter(noise, 5)
 
             o_c_filtered["e_oc_{}".format(k)] = opening(closing(noise, kernel), kernel)
             c_o_filtered["e_co_{}".format(k)] = closing(opening(noise, kernel), kernel)
